@@ -42,7 +42,7 @@ observeEvent( input$submit, {
 		reactivevalue$txdb=TxDb.Mmusculus.UCSC.mm10.knownGene
 			}
 		}
-	  
+
 
       setProgress(0.5, 'Finished Building Annotation.')
       reactivevalue$peakAnno <- annotatePeak(reactivevalue$peak, tssRegion=c(-3000, 3000),level = 'gene',
@@ -53,6 +53,13 @@ observeEvent( input$submit, {
 
     })
     reactivevalue$peakAnnodataframe=data.frame(reactivevalue$peakAnno)
+    reactivevalue$gene=unique(reactivevalue$peakAnnodataframe$SYMBOL)
+    reactivevalue$gene=reactivevalue$gene[!is.na(reactivevalue$gene)]
+
+    reactivevalue$Region=unique(reactivevalue$peakAnnodataframe$annotation)
+
+    updateSelectizeInput(session,'Gene','Gene',choices=reactivevalue$gene,
+                         selected=NULL,options=list(placeholder = 'Please select an option below',onInitialize = I('function() { this.setValue(""); }')))
   }
 })
 
@@ -89,12 +96,43 @@ observe( if (!is.null(reactivevalue$peak)) {
 
 })
 
-#
+observe( if (!is.null(input$Gene)) {
+  selectedcolumns=c('seqnames',
+                    'start',
+                    'end',
+                    'width',
+                    'annotation',
+                    'geneId',
+                    'distanceToTSS',
+                    'SYMBOL',
+                    'GENENAME')
+  output$gene_annotation_table=DT::renderDT(DT::datatable(reactivevalue$peakAnnodataframe[reactivevalue$peakAnnodataframe$SYMBOL%in%input$Gene
+                                                                                          ,selectedcolumns],rownames = F),filter = "top")
+})
+
+observe( if (!is.null(input$Region)) {
+  selectedcolumns=c('seqnames',
+                    'start',
+                    'end',
+                    'width',
+                    'annotation',
+                    'geneId',
+                    'distanceToTSS',
+                    'SYMBOL',
+                    'GENENAME')
+  output$region_annotation_table=DT::renderDT(DT::datatable(reactivevalue$peakAnnodataframe[grepl(input$Region,reactivevalue$peakAnnodataframe$annotation)
+                                                                                          ,selectedcolumns],rownames = F),filter = "top")
+})
+
+
+
+
 
 
 observeEvent( input$TSS_heatmap_submit, {
   output$TSS_Heatmap=renderPlot(peakHeatmap(reactivevalue$peak, TxDb=reactivevalue$txdb, upstream=(input$TSS_range), downstream=input$TSS_range, color="blue"))
 })
+
 
 
 

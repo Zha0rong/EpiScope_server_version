@@ -47,6 +47,17 @@ tabPanel("EpiScope",
                ),
                tabPanel('Detail Annotation of peaks',
                         DTOutput(outputId = 'annotation_table',width='75%')
+               ),
+               tabPanel('Extract peak based on genes',
+                        selectizeInput(inputId = 'Gene',label = 'Gene',choices = NULL,multiple = F,selected = NULL,
+                                       options=list(placeholder = 'Please select an option below',onInitialize = I('function() { this.setValue(""); }'))),
+                        DTOutput(outputId = 'gene_annotation_table',width='75%')
+               ),
+               tabPanel('Extract peak based on Region',
+                        selectizeInput(inputId = 'Region',label = 'Region',choices = c("Promoter", "5' UTR", "3' UTR", "Exon", "Intron",
+                                                                                       "Downstream"),multiple = F,selected = NULL,
+                                       options=list(placeholder = 'Please select an option below',onInitialize = I('function() { this.setValue(""); }'))),
+                        DTOutput(outputId = 'region_annotation_table',width='75%')
                )
 
              )
