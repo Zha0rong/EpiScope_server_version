@@ -55,7 +55,7 @@ observeEvent( input$submit, {
     reactivevalue$peakAnnodataframe=data.frame(reactivevalue$peakAnno)
     reactivevalue$gene=unique(reactivevalue$peakAnnodataframe$SYMBOL)
     reactivevalue$gene=reactivevalue$gene[!is.na(reactivevalue$gene)]
-
+    reactivevalue$gene=reactivevalue$gene[order(reactivevalue$gene)]
     reactivevalue$Region=unique(reactivevalue$peakAnnodataframe$annotation)
 
     updateSelectizeInput(session,'Gene','Gene',choices=reactivevalue$gene,
@@ -107,7 +107,7 @@ observe( if (!is.null(input$Gene)) {
                     'SYMBOL',
                     'GENENAME')
   output$gene_annotation_table=DT::renderDT(DT::datatable(reactivevalue$peakAnnodataframe[reactivevalue$peakAnnodataframe$SYMBOL%in%input$Gene
-                                                                                          ,selectedcolumns],rownames = F),filter = "top")
+                                                                                          ,selectedcolumns],rownames = F))
 })
 
 observe( if (!is.null(input$Region)) {
@@ -121,7 +121,7 @@ observe( if (!is.null(input$Region)) {
                     'SYMBOL',
                     'GENENAME')
   output$region_annotation_table=DT::renderDT(DT::datatable(reactivevalue$peakAnnodataframe[grepl(input$Region,reactivevalue$peakAnnodataframe$annotation)
-                                                                                          ,selectedcolumns],rownames = F),filter = "top")
+                                                                                          ,selectedcolumns],rownames = F))
 })
 
 

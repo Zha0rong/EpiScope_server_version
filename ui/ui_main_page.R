@@ -28,13 +28,12 @@ tabPanel("EpiScope",
              tabsetPanel(
                tabPanel('Peak Summmary',
                         h3('Distribution of Domain in Genome'),
-                        DT::dataTableOutput('chromosomal_peak_distribution',width = '75%')
-               ),
+                        DT::dataTableOutput('chromosomal_peak_distribution',width = '75%'),
+                        h3('Distribution of Peak Length'),
 
-               tabPanel('Peak Length Distribution',
+                        DT::dataTableOutput(outputId = 'length_distribution_table',width='75%'),
+
                         plotOutput('length_distribution',width = '75%'),
-                        DT::dataTableOutput(outputId = 'length_distribution_table',width='75%')
-
                ),
                tabPanel('TSS Heatmap',
                         h3('Heatmap visualization of TSS coverage'),
@@ -42,13 +41,13 @@ tabPanel("EpiScope",
                         actionButton(inputId = 'TSS_heatmap_submit',label = 'Submit'),
                         plotOutput('TSS_Heatmap',width = '50%')
                ),
-               tabPanel('Functional Annotation of peaks',
+               tabPanel('Functional Annotation',
                         plotOutput('upsetandvenn')
                ),
-               tabPanel('Detail Annotation of peaks',
+               tabPanel('Detail Annotation',
                         DTOutput(outputId = 'annotation_table',width='75%')
                ),
-               tabPanel('Extract peak based on genes',
+               tabPanel('Extract peak based on Gene',
                         selectizeInput(inputId = 'Gene',label = 'Gene',choices = NULL,multiple = F,selected = NULL,
                                        options=list(placeholder = 'Please select an option below',onInitialize = I('function() { this.setValue(""); }'))),
                         DTOutput(outputId = 'gene_annotation_table',width='75%')
