@@ -48,15 +48,24 @@ tabPanel("EpiScope",
                         DTOutput(outputId = 'annotation_table',width='75%')
                ),
                tabPanel('Extract peak based on Gene',
-                        selectizeInput(inputId = 'Gene',label = 'Gene',choices = NULL,multiple = F,selected = NULL,
+                        selectizeInput(inputId = 'Gene',label = 'Gene',choices = NULL,multiple = T,selected = NULL,
                                        options=list(placeholder = 'Please select an option below',onInitialize = I('function() { this.setValue(""); }'))),
+
                         DTOutput(outputId = 'gene_annotation_table',width='75%')
                ),
                tabPanel('Extract peak based on Region',
                         selectizeInput(inputId = 'Region',label = 'Region',choices = c("Promoter", "5' UTR", "3' UTR", "Exon", "Intron",
-                                                                                       "Downstream"),multiple = F,selected = NULL,
+                                                                                       "Downstream"),multiple = T,selected = NULL,
                                        options=list(placeholder = 'Please select an option below',onInitialize = I('function() { this.setValue(""); }'))),
                         DTOutput(outputId = 'region_annotation_table',width='75%')
+               ),
+               tabPanel('Advance Search',
+                        selectizeInput(inputId = 'Gene_ad',label = 'Gene',choices = NULL,multiple = T,selected = NULL,
+                                       options=list(placeholder = 'Please select an option below',onInitialize = I('function() { this.setValue(""); }'))),
+                        selectizeInput(inputId = 'Region_ad',label = 'Region',choices = c("Promoter", "5' UTR", "3' UTR", "Exon", "Intron",
+                                                                                       "Downstream"),multiple = T,selected = NULL,
+                                       options=list(placeholder = 'Please select an option below',onInitialize = I('function() { this.setValue(""); }'))),
+                        DTOutput(outputId = 'ad_search_annotation_table',width='75%')
                )
 
              )

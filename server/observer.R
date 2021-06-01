@@ -60,6 +60,8 @@ observeEvent( input$submit, {
 
     updateSelectizeInput(session,'Gene','Gene',choices=reactivevalue$gene,
                          selected=NULL,options=list(placeholder = 'Please select an option below',onInitialize = I('function() { this.setValue(""); }')))
+    updateSelectizeInput(session,'Gene_ad','Gene',choices=reactivevalue$gene,
+                         selected=NULL,options=list(placeholder = 'Please select an option below',onInitialize = I('function() { this.setValue(""); }')))
   }
 })
 
@@ -68,7 +70,7 @@ observe( if (!is.null(reactivevalue$peak)) {
   chromosomal_peak_distribution=data.frame(table(reactivevalue$peak@seqnames),stringsAsFactors = F)
   colnames(chromosomal_peak_distribution)=c('Chromosome','Number of Peaks')
   chromosomal_peak_distribution=chromosomal_peak_distribution[order(as.character(chromosomal_peak_distribution$Chromosome)),]
-  output$chromosomal_peak_distribution=renderDataTable(datatable(chromosomal_peak_distribution))
+  output$chromosomal_peak_distribution=renderDataTable(datatable(chromosomal_peak_distribution,rownames = F))
   length_distribution=as.numeric(reactivevalue$peak@ranges@width)
   length_distribution=data.frame(length_distribution)
   colnames(length_distribution)='width'
@@ -120,11 +122,26 @@ observe( if (!is.null(input$Region)) {
                     'distanceToTSS',
                     'SYMBOL',
                     'GENENAME')
-  output$region_annotation_table=DT::renderDT(DT::datatable(reactivevalue$peakAnnodataframe[grepl(input$Region,reactivevalue$peakAnnodataframe$annotation)
+  selected_region=paste(input$Region,collapse = '|')
+  output$region_annotation_table=DT::renderDT(DT::datatable(reactivevalue$peakAnnodataframe[grepl(selected_region,reactivevalue$peakAnnodataframe$annotation)
                                                                                           ,selectedcolumns],rownames = F))
 })
 
-
+observe( if (!is.null(input$Gene_ad)&!is.null(input$Region_ad)) {
+  selectedcolumns=c('seqnames',
+                    'start',
+                    'end',
+                    'width',
+                    'annotation',
+                    'geneId',
+                    'distanceToTSS',
+                    'SYMBOL',
+                    'GENENAME')
+  selected_region=paste(input$Region_ad,collapse = '|')
+  output$ad_search_annotation_table=DT::renderDT(DT::datatable(reactivevalue$peakAnnodataframe[reactivevalue$peakAnnodataframe$SYMBOL%in%input$Gene_ad&
+                                                                                                 grepl(selected_region,reactivevalue$peakAnnodataframe$annotation)
+                                                                                               ,selectedcolumns],rownames = F))
+})
 
 
 
