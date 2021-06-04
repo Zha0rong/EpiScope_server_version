@@ -1,5 +1,5 @@
 
-tabPanel("EpiScope",
+tabPanel("Summary",
          #img(src = "header.png", height="50%", width="50%", align="right"),
 
          # Application title

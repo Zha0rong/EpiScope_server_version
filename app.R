@@ -7,20 +7,15 @@ require(plotly)
 require(data.table)
 require(dplyr)
 require(tidyr)
-require(biomaRt)
 require(GenomicFeatures)
 require(ChIPseeker)
-require(AnnotationHub)
-require(AnnotationDbi)
-require(magrittr)
 require(TxDb.Mmusculus.UCSC.mm9.knownGene)
 require(TxDb.Mmusculus.UCSC.mm10.knownGene)
 require(TxDb.Hsapiens.UCSC.hg38.knownGene)
 require(TxDb.Hsapiens.UCSC.hg19.knownGene)
 require(org.Mm.eg.db)
 require(org.Hs.eg.db)
-require(ggupset)
-require(ggplotify)
+require(Gviz)
 
 source('utils/Utilities.R')
 source('utils/getNearestFeatureIndicesAndDistances.R')
@@ -36,7 +31,7 @@ ui <- navbarPage(
   fluid=TRUE,
   theme = shinytheme("yeti"),
 
-  source(file.path("ui", "ui_main_page.R"),  local = TRUE)$value
+  source(file.path("ui", "ui_summary.R"),  local = TRUE)$value
 
 
 )
