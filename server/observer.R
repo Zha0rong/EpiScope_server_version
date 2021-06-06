@@ -24,7 +24,7 @@ observeEvent( input$submit, {
       reactivevalue$Bed=input$Bed$datapath
       reactivevalue$peak=readPeakFile(reactivevalue$Bed)
       seqlevelsStyle(reactivevalue$peak) = 'UCSC'
-      setProgress(0.25, 'Finished Reading in Peaks.')
+      setProgress(0.25, 'Loading Annotation Database...')
 		if (input$Species=='Homo sapiens') {
 		reactivevalue$annodb="org.Hs.eg.db"
 		if (input$GenomeVersion=='GRCh37') {
@@ -47,10 +47,10 @@ observeEvent( input$submit, {
 		reactivevalue$txdb=TxDb.Mmusculus.UCSC.mm10.knownGene
 			}
 		}
-      setProgress(0.5, 'Finished Building Annotation.')
+      setProgress(0.5, 'Annotating peaks...')
       reactivevalue$peakAnno <- annotatePeak(reactivevalue$peak, tssRegion=c(-3000, 3000),level = 'gene',
                                              TxDb=reactivevalue$txdb,verbose = F,annoDb = reactivevalue$annodb)
-      setProgress(0.75, 'Finished Annotating Peaks.')
+      setProgress(0.75, 'Loading Annotated peaks...')
       reactivevalue$peakAnnodataframe=data.frame(reactivevalue$peakAnno)
       reactivevalue$gene=unique(reactivevalue$peakAnnodataframe$SYMBOL)
       reactivevalue$gene=reactivevalue$gene[!is.na(reactivevalue$gene)]
@@ -207,30 +207,64 @@ observe( if (!is.null(input$Gene_ad)&!is.null(input$Region_ad)) {
 
 ####TSS Figure Section####
 observeEvent( input$TSS_heatmap_submit, {
-  reactivevalue$promoter <- getPromoters(TxDb=reactivevalue$txdb, upstream=input$TSS_range, downstream=input$TSS_range)
-  reactivevalue$tagMatrix <- getTagMatrix(reactivevalue$peak, windows=reactivevalue$promoter)
+  msg <- sprintf('Starting TSS analysis...')
+
+  withProgress(message=msg, {
+    setProgress(0.1, 'Loading Promoter Region Database...')
+    reactivevalue$promoter <- getPromoters(TxDb=reactivevalue$txdb, upstream=input$TSS_range, downstream=input$TSS_range)
+
+    setProgress(0.5, 'Detecting peaks in Promoter Region...')
+    reactivevalue$tagMatrix <- getTagMatrix(reactivevalue$peak, windows=reactivevalue$promoter)
+    setProgress(1, 'Completed')
+  })
+
   if (input$TSS_visualization_method=='Heatmap'){
-  output$TSS_Heatmap=renderPlot(
-    tagHeatmap(reactivevalue$tagMatrix, xlim=c(-input$TSS_range, input$TSS_range), color="blue")
-  )
+    msg <- sprintf('Building figure...')
+
+    withProgress(message=msg, {
+    setProgress(0.1, 'Building figure...')
+
+    output$TSS_Heatmap=renderPlot(tagHeatmap(reactivevalue$tagMatrix, xlim=c(-input$TSS_range, input$TSS_range), color="blue"))
+    setProgress(1, 'Completed')
+    })
+
   output$downloadTSScoverage <- downloadHandler(
     filename = paste('TSS_Heatmap', '.pdf', sep='') ,
     content = function(file) {
+      msg <- sprintf('Building figure...')
       pdf(file,width = 10,height = 10) # open the pdf device
-      tagHeatmap(reactivevalue$tagMatrix, xlim=c(-input$TSS_range, input$TSS_range), color="blue")
+
+      withProgress(message=msg, {
+        setProgress(0.1, 'Building figure...')
+
+        (tagHeatmap(reactivevalue$tagMatrix, xlim=c(-input$TSS_range, input$TSS_range), color="blue"))
+        setProgress(1, 'Completed')
+      })
       dev.off()
     }
   )
   }
   else if (input$TSS_visualization_method=='Coverage Plot'){
-    output$TSS_Heatmap=renderPlot(
-      plotAvgProf(reactivevalue$tagMatrix, xlim=c(-input$TSS_range, input$TSS_range))
-    )
+
+    msg <- sprintf('Building figure...')
+
+    withProgress(message=msg, {
+      setProgress(0.1, 'Building figure...')
+
+      output$TSS_Heatmap=renderPlot(plotAvgProf(reactivevalue$tagMatrix, xlim=c(-input$TSS_range, input$TSS_range)))
+      setProgress(1, 'Completed')
+    })
     output$downloadTSScoverage <- downloadHandler(
       filename = paste('TSS_Coverage_plot', '.pdf', sep='') ,
       content = function(file) {
+        setProgress(0.1, 'Building figure...')
         pdf(file,width = 10,height = 10) # open the pdf device
-        plot(plotAvgProf(reactivevalue$tagMatrix, xlim=c(-input$TSS_range, input$TSS_range)))
+        withProgress(message=msg, {
+          setProgress(0.1, 'Building figure...')
+
+          plot(plotAvgProf(reactivevalue$tagMatrix, xlim=c(-input$TSS_range, input$TSS_range)))
+          setProgress(1, 'Completed')
+        })
         dev.off()
       }
     )
