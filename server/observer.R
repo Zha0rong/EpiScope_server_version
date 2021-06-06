@@ -1,3 +1,4 @@
+####Genome and Genome version Handler####
 observe( if (!is.null(reactivevalue$species)) {
   updateSelectizeInput(session,'Species','Select Species',choices=reactivevalue$species,
                        selected=NULL,options=list(placeholder = 'Please select an option below',onInitialize = I('function() { this.setValue(""); }')))
@@ -14,7 +15,7 @@ else if (input$Species=='Mus musculus') {
                        selected=NULL,options=list(placeholder = 'Please select an option below',onInitialize = I('function() { this.setValue(""); }')))
 					   }
 })
-
+####Take in the peak files and annotate####
 observeEvent( input$submit, {
   if (!is.null(input$Bed)) {
     msg <- sprintf('Uploading...')
@@ -46,8 +47,6 @@ observeEvent( input$submit, {
 		reactivevalue$txdb=TxDb.Mmusculus.UCSC.mm10.knownGene
 			}
 		}
-
-
       setProgress(0.5, 'Finished Building Annotation.')
       reactivevalue$peakAnno <- annotatePeak(reactivevalue$peak, tssRegion=c(-3000, 3000),level = 'gene',
                                              TxDb=reactivevalue$txdb,verbose = F,annoDb = reactivevalue$annodb)
@@ -63,10 +62,18 @@ observeEvent( input$submit, {
       updateSelectizeInput(session,'Gene_ad','Gene',choices=reactivevalue$gene,
                            selected=NULL,options=list(placeholder = 'Please select an option below',onInitialize = I('function() { this.setValue(""); }')))
       setProgress(1, 'Completed')
-
     })
+    output$download_annotation <- downloadHandler(
+      filename = function() {
+        paste('Full_Anntotation', ".tsv", sep = "")
+      },
+      content = function(file) {
+        write.table(reactivevalue$peakAnnodataframe, file, row.names = FALSE,quote = F,sep = '\t')
+      }
+    )
 
   }
+
 })
 
 
@@ -100,8 +107,16 @@ observe( if (!is.null(reactivevalue$peak)) {
                     'GENENAME')
   output$annotation_table=DT::renderDT(DT::datatable(reactivevalue$peakAnnodataframe[,selectedcolumns],rownames = F),filter = "top")
 
+
+
+
+
+
+
+
 })
 
+####Filter peak based on gene, region, gene and region####
 observe( if (!is.null(input$Gene)) {
   selectedcolumns=c('seqnames',
                     'start',
@@ -114,6 +129,16 @@ observe( if (!is.null(input$Gene)) {
                     'GENENAME')
   output$gene_annotation_table=DT::renderDT(DT::datatable(reactivevalue$peakAnnodataframe[reactivevalue$peakAnnodataframe$SYMBOL%in%input$Gene
                                                                                           ,selectedcolumns],rownames = F))
+
+  output$download_gene_annotation_table <- downloadHandler(
+    filename = function() {
+      paste('Peaks_associated_with_selected_genes', ".tsv", sep = "")
+    },
+    content = function(file) {
+      write.table(reactivevalue$peakAnnodataframe[reactivevalue$peakAnnodataframe$SYMBOL%in%input$Gene
+                                                  ,], file, row.names = FALSE,quote = F,sep = '\t')
+    }
+  )
 })
 
 observe( if (!is.null(input$Region)) {
@@ -129,7 +154,26 @@ observe( if (!is.null(input$Region)) {
   selected_region=paste(input$Region,collapse = '|')
   output$region_annotation_table=DT::renderDT(DT::datatable(reactivevalue$peakAnnodataframe[grepl(selected_region,reactivevalue$peakAnnodataframe$annotation)
                                                                                           ,selectedcolumns],rownames = F))
+
+
+  output$download_region_annotation_table <- downloadHandler(
+    filename = function() {
+      paste('Peaks_associated_with_selected_region', ".tsv", sep = "")
+    },
+    content = function(file) {
+      write.table(reactivevalue$peakAnnodataframe[grepl(selected_region,reactivevalue$peakAnnodataframe$annotation)
+                                                  ,], file, row.names = FALSE,quote = F,sep = '\t')
+    }
+  )
+
+
+
 })
+
+
+
+
+
 
 observe( if (!is.null(input$Gene_ad)&!is.null(input$Region_ad)) {
   selectedcolumns=c('seqnames',
@@ -145,8 +189,23 @@ observe( if (!is.null(input$Gene_ad)&!is.null(input$Region_ad)) {
   output$ad_search_annotation_table=DT::renderDT(DT::datatable(reactivevalue$peakAnnodataframe[reactivevalue$peakAnnodataframe$SYMBOL%in%input$Gene_ad&
                                                                                                  grepl(selected_region,reactivevalue$peakAnnodataframe$annotation)
                                                                                                ,selectedcolumns],rownames = F))
+
+  output$download_as_annotation_table <- downloadHandler(
+    filename = function() {
+      paste('Peaks_associated_with_searching_criteria', ".tsv", sep = "")
+    },
+    content = function(file) {
+      write.table(reactivevalue$peakAnnodataframe[reactivevalue$peakAnnodataframe$SYMBOL%in%input$Gene_ad&grepl(selected_region,reactivevalue$peakAnnodataframe$annotation)
+                                                  ,], file, row.names = FALSE,quote = F,sep = '\t')
+    }
+  )
+
+
+
 })
 
+
+####TSS Figure Section####
 observeEvent( input$TSS_heatmap_submit, {
   reactivevalue$promoter <- getPromoters(TxDb=reactivevalue$txdb, upstream=input$TSS_range, downstream=input$TSS_range)
   reactivevalue$tagMatrix <- getTagMatrix(reactivevalue$peak, windows=reactivevalue$promoter)
@@ -178,6 +237,8 @@ observeEvent( input$TSS_heatmap_submit, {
   }
 })
 
+
+####Annotation Figure Section####
 observeEvent( input$Annotation_figure_submit, {
   if (input$Annotation_figure_option=='Pie') {
   output$Annotation_figure=renderPlot(plotAnnoPie(reactivevalue$peakAnno))
@@ -226,7 +287,4 @@ observeEvent( input$Annotation_figure_submit, {
       }
     )
   }
-
-
-
 })

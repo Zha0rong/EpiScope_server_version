@@ -42,8 +42,9 @@ tabPanel("Summary",
                                     ),
                         numericInput('TSS_range','Range of TSS site',value = 2000,min = 0),
                         actionButton(inputId = 'TSS_heatmap_submit',label = 'Submit'),
-                        plotOutput('TSS_Heatmap',width = '50%'),
-                        downloadButton("downloadTSScoverage", "Download TSS coverage plot")
+                        downloadButton("downloadTSScoverage", "Download TSS coverage plot"),
+
+                        plotOutput('TSS_Heatmap',width = '50%')
                ),
                tabPanel('Functional Annotation',
                         selectInput('Annotation_figure_option',
@@ -51,24 +52,35 @@ tabPanel("Summary",
                                                                                                      'VennPie','upsetplot'),multiple = F,selected = 'Pie'
                         ),
                         actionButton(inputId = 'Annotation_figure_submit',label = 'Submit'),
-                        plotOutput('Annotation_figure'),
-                        downloadButton("downloadannotationfigure", "Download Annotation figure")
+                        downloadButton("downloadannotationfigure", "Download Annotation figure"),
+
+                        plotOutput('Annotation_figure')
 
                ),
                tabPanel('Detail Annotation',
+                        downloadButton("download_annotation", "Download Annotation table"),
+
                         DTOutput(outputId = 'annotation_table',width='75%')
+
+
                ),
                tabPanel('Extract peak based on Gene',
                         selectizeInput(inputId = 'Gene',label = 'Gene',choices = NULL,multiple = T,selected = NULL,
                                        options=list(placeholder = 'Please select an option below',onInitialize = I('function() { this.setValue(""); }'))),
+                        downloadButton("download_gene_annotation_table", "Download peak associated with selected genes"),
+
 
                         DTOutput(outputId = 'gene_annotation_table',width='75%')
+
                ),
                tabPanel('Extract peak based on Region',
                         selectizeInput(inputId = 'Region',label = 'Region',choices = c("Promoter", "5' UTR", "3' UTR", "Exon", "Intron",
                                                                                        "Downstream"),multiple = T,selected = NULL,
                                        options=list(placeholder = 'Please select an option below',onInitialize = I('function() { this.setValue(""); }'))),
+                        downloadButton("download_region_annotation_table", "Download peak associated with selected regions"),
+
                         DTOutput(outputId = 'region_annotation_table',width='75%')
+
                ),
                tabPanel('Advance Search',
                         selectizeInput(inputId = 'Gene_ad',label = 'Gene',choices = NULL,multiple = T,selected = NULL,
@@ -76,6 +88,8 @@ tabPanel("Summary",
                         selectizeInput(inputId = 'Region_ad',label = 'Region',choices = c("Promoter", "5' UTR", "3' UTR", "Exon", "Intron",
                                                                                        "Downstream"),multiple = T,selected = NULL,
                                        options=list(placeholder = 'Please select an option below',onInitialize = I('function() { this.setValue(""); }'))),
+                        downloadButton("download_as_annotation_table", "Download peak associated with searching criteria"),
+
                         DTOutput(outputId = 'ad_search_annotation_table',width='75%')
                )
 
