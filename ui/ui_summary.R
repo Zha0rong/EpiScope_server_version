@@ -36,7 +36,8 @@ tabPanel("Summary",
                         plotOutput('length_distribution',width = '75%'),
                ),
                tabPanel('TSS Visualization',
-                        h3('visualization of TSS coverage'),
+                        h3('Visualization of TSS coverage'),
+                        h4('Only 10% of peak will be used to generate TSS visualization due to speed concern.'),
                         selectInput('TSS_visualization_method',
                                     'Select a Method to Visualize TSS Coverage',choices = c('Heatmap','Coverage Plot'),multiple = F,selected = 'Heatmap'
                                     ),
@@ -44,7 +45,7 @@ tabPanel("Summary",
                         actionButton(inputId = 'TSS_heatmap_submit',label = 'Submit'),
                         downloadButton("downloadTSScoverage", "Download TSS coverage plot"),
 
-                        plotOutput('TSS_Heatmap',width = '75%')
+                        plotOutput('TSS_Heatmap',width = '50%',height = '100%')
                ),
                tabPanel('Functional Annotation',
                         selectInput('Annotation_figure_option',
