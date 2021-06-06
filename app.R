@@ -31,7 +31,9 @@ ui <- navbarPage(
   fluid=TRUE,
   theme = shinytheme("yeti"),
 
-  source(file.path("ui", "ui_summary.R"),  local = TRUE)$value
+  source(file.path("ui", "ui_summary.R"),  local = TRUE)$value,
+  #source(file.path("ui", "ui_functional_visualization.R"),  local = TRUE)$value
+
 
 
 )
