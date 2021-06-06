@@ -214,7 +214,7 @@ observeEvent( input$TSS_heatmap_submit, {
     reactivevalue$promoter <- getPromoters(TxDb=reactivevalue$txdb, upstream=input$TSS_range, downstream=input$TSS_range)
 
     setProgress(0.5, 'Detecting peaks in Promoter Region...')
-    reactivevalue$tagMatrix <- getTagMatrix(reactivevalue$peak, windows=reactivevalue$promoter)
+    reactivevalue$tagMatrix <- getTagMatrix(sample(reactivevalue$peak,replace = F,size = 0.1*length(reactivevalue$peak)), windows=reactivevalue$promoter)
     setProgress(1, 'Completed')
   })
 
@@ -224,7 +224,7 @@ observeEvent( input$TSS_heatmap_submit, {
     withProgress(message=msg, {
     setProgress(0.1, 'Building figure...')
 
-    output$TSS_Heatmap=renderPlot(tagHeatmap(reactivevalue$tagMatrix, xlim=c(-input$TSS_range, input$TSS_range), color="blue"),res = 100)
+    output$TSS_Heatmap=renderPlot(tagHeatmap(reactivevalue$tagMatrix, xlim=c(-input$TSS_range, input$TSS_range), color="blue"))
     setProgress(1, 'Completed')
     })
 
@@ -251,13 +251,13 @@ observeEvent( input$TSS_heatmap_submit, {
     withProgress(message=msg, {
       setProgress(0.1, 'Building figure...')
 
-      output$TSS_Heatmap=renderPlot(plotAvgProf(reactivevalue$tagMatrix, xlim=c(-input$TSS_range, input$TSS_range)),res = 100)
+      output$TSS_Heatmap=renderPlot(plotAvgProf(reactivevalue$tagMatrix, xlim=c(-input$TSS_range, input$TSS_range)))
       setProgress(1, 'Completed')
     })
     output$downloadTSScoverage <- downloadHandler(
       filename = paste('TSS_Coverage_plot', '.pdf', sep='') ,
       content = function(file) {
-        setProgress(0.1, 'Building figure...')
+        msg <- sprintf('Building figure...')
         pdf(file,width = 10,height = 10) # open the pdf device
         withProgress(message=msg, {
           setProgress(0.1, 'Building figure...')
