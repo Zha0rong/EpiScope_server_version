@@ -5,6 +5,12 @@ tabPanel("Functional Visualization",
          titlePanel("Functional Visualization"),
 
          # Place for uploading data
+         sidebarLayout(
+           sidebarPanel(
+             h3("Functional Visualization Introduction"),
+             h4('This tab offers the Visualization of peaks distributions around Transcription Start Sites (TSS) and Functional Annotation')
+
+           )),
 
            # Show a table of the inputted data
            mainPanel(
@@ -34,5 +40,4 @@ tabPanel("Functional Visualization",
              )
              )
            )
-         )
-
+)

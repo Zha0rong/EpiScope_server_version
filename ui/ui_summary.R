@@ -45,7 +45,7 @@ tabPanel("Summary",
                         actionButton(inputId = 'TSS_heatmap_submit',label = 'Submit'),
                         downloadButton("downloadTSScoverage", "Download TSS coverage plot"),
 
-                        plotOutput('TSS_Heatmap',width = '50%',height = '100%')
+                        plotOutput('TSS_Heatmap',width = '50%')
                ),
                tabPanel('Functional Annotation',
                         selectInput('Annotation_figure_option',
