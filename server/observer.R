@@ -224,7 +224,7 @@ observeEvent( input$TSS_heatmap_submit, {
     withProgress(message=msg, {
     setProgress(0.1, 'Building figure...')
 
-    output$TSS_Heatmap=renderPlot(tagHeatmap(reactivevalue$tagMatrix, xlim=c(-input$TSS_range, input$TSS_range), color="blue"))
+    output$TSS_Heatmap=renderPlot(tagHeatmap(reactivevalue$tagMatrix, xlim=c(-input$TSS_range, input$TSS_range), color="blue"),res = 100)
     setProgress(1, 'Completed')
     })
 
@@ -251,7 +251,7 @@ observeEvent( input$TSS_heatmap_submit, {
     withProgress(message=msg, {
       setProgress(0.1, 'Building figure...')
 
-      output$TSS_Heatmap=renderPlot(plotAvgProf(reactivevalue$tagMatrix, xlim=c(-input$TSS_range, input$TSS_range)))
+      output$TSS_Heatmap=renderPlot(plotAvgProf(reactivevalue$tagMatrix, xlim=c(-input$TSS_range, input$TSS_range)),res = 100)
       setProgress(1, 'Completed')
     })
     output$downloadTSScoverage <- downloadHandler(
