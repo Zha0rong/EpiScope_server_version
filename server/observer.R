@@ -27,18 +27,22 @@ observeEvent( input$submit, {
 		if (input$Species=='Homo sapiens') {
 		reactivevalue$annodb="org.Hs.eg.db"
 		if (input$GenomeVersion=='GRCh37') {
+		  require(TxDb.Hsapiens.UCSC.hg19.knownGene)
 		reactivevalue$txdb=TxDb.Hsapiens.UCSC.hg19.knownGene
 			}
 		else if (input$GenomeVersion=='GRCh38') {
+		  require(TxDb.Hsapiens.UCSC.hg38.knownGene)
 		reactivevalue$txdb=TxDb.Hsapiens.UCSC.hg38.knownGene
 			}
 		}
 		else if (input$Species=='Mus musculus') {
 		reactivevalue$annodb="org.Mm.eg.db"
 		if (input$GenomeVersion=='mm9') {
+		  require(TxDb.Mmusculus.UCSC.mm9.knownGene)
 		reactivevalue$txdb=TxDb.Mmusculus.UCSC.mm9.knownGene
 			}
 		else if (input$GenomeVersion=='mm10') {
+		  require(TxDb.Mmusculus.UCSC.mm10.knownGene)
 		reactivevalue$txdb=TxDb.Mmusculus.UCSC.mm10.knownGene
 			}
 		}
@@ -48,20 +52,20 @@ observeEvent( input$submit, {
       reactivevalue$peakAnno <- annotatePeak(reactivevalue$peak, tssRegion=c(-3000, 3000),level = 'gene',
                                              TxDb=reactivevalue$txdb,verbose = F,annoDb = reactivevalue$annodb)
       setProgress(0.75, 'Finished Annotating Peaks.')
-      output$upsetandvenn = renderPlot(upsetplot(reactivevalue$peakAnno, vennpie=TRUE))
+      reactivevalue$peakAnnodataframe=data.frame(reactivevalue$peakAnno)
+      reactivevalue$gene=unique(reactivevalue$peakAnnodataframe$SYMBOL)
+      reactivevalue$gene=reactivevalue$gene[!is.na(reactivevalue$gene)]
+      reactivevalue$gene=reactivevalue$gene[order(reactivevalue$gene)]
+      reactivevalue$Region=unique(reactivevalue$peakAnnodataframe$annotation)
+
+      updateSelectizeInput(session,'Gene','Gene',choices=reactivevalue$gene,
+                           selected=NULL,options=list(placeholder = 'Please select an option below',onInitialize = I('function() { this.setValue(""); }')))
+      updateSelectizeInput(session,'Gene_ad','Gene',choices=reactivevalue$gene,
+                           selected=NULL,options=list(placeholder = 'Please select an option below',onInitialize = I('function() { this.setValue(""); }')))
       setProgress(1, 'Completed')
 
     })
-    reactivevalue$peakAnnodataframe=data.frame(reactivevalue$peakAnno)
-    reactivevalue$gene=unique(reactivevalue$peakAnnodataframe$SYMBOL)
-    reactivevalue$gene=reactivevalue$gene[!is.na(reactivevalue$gene)]
-    reactivevalue$gene=reactivevalue$gene[order(reactivevalue$gene)]
-    reactivevalue$Region=unique(reactivevalue$peakAnnodataframe$annotation)
 
-    updateSelectizeInput(session,'Gene','Gene',choices=reactivevalue$gene,
-                         selected=NULL,options=list(placeholder = 'Please select an option below',onInitialize = I('function() { this.setValue(""); }')))
-    updateSelectizeInput(session,'Gene_ad','Gene',choices=reactivevalue$gene,
-                         selected=NULL,options=list(placeholder = 'Please select an option below',onInitialize = I('function() { this.setValue(""); }')))
   }
 })
 
@@ -143,14 +147,86 @@ observe( if (!is.null(input$Gene_ad)&!is.null(input$Region_ad)) {
                                                                                                ,selectedcolumns],rownames = F))
 })
 
-
-
-
 observeEvent( input$TSS_heatmap_submit, {
-  output$TSS_Heatmap=renderPlot(peakHeatmap(reactivevalue$peak, TxDb=reactivevalue$txdb, upstream=(input$TSS_range), downstream=input$TSS_range, color="blue"))
+  reactivevalue$promoter <- getPromoters(TxDb=reactivevalue$txdb, upstream=input$TSS_range, downstream=input$TSS_range)
+  reactivevalue$tagMatrix <- getTagMatrix(reactivevalue$peak, windows=reactivevalue$promoter)
+  if (input$TSS_visualization_method=='Heatmap'){
+  output$TSS_Heatmap=renderPlot(
+    tagHeatmap(reactivevalue$tagMatrix, xlim=c(-input$TSS_range, input$TSS_range), color="blue")
+  )
+  output$downloadTSScoverage <- downloadHandler(
+    filename = paste('TSS_Heatmap', '.pdf', sep='') ,
+    content = function(file) {
+      pdf(file,width = 10,height = 10) # open the pdf device
+      tagHeatmap(reactivevalue$tagMatrix, xlim=c(-input$TSS_range, input$TSS_range), color="blue")
+      dev.off()
+    }
+  )
+  }
+  else if (input$TSS_visualization_method=='Coverage Plot'){
+    output$TSS_Heatmap=renderPlot(
+      plotAvgProf(reactivevalue$tagMatrix, xlim=c(-input$TSS_range, input$TSS_range))
+    )
+    output$downloadTSScoverage <- downloadHandler(
+      filename = paste('TSS_Coverage_plot', '.pdf', sep='') ,
+      content = function(file) {
+        pdf(file,width = 10,height = 10) # open the pdf device
+        plot(plotAvgProf(reactivevalue$tagMatrix, xlim=c(-input$TSS_range, input$TSS_range)))
+        dev.off()
+      }
+    )
+  }
 })
 
+observeEvent( input$Annotation_figure_submit, {
+  if (input$Annotation_figure_option=='Pie') {
+  output$Annotation_figure=renderPlot(plotAnnoPie(reactivevalue$peakAnno))
+  output$downloadannotationfigure <- downloadHandler(
+    filename = paste('Annotation_figure_pie_plot', '.pdf', sep='') ,
+    content = function(file) {
+      pdf(file,width = 10,height = 10) # open the pdf device
+      (plotAnnoPie(reactivevalue$peakAnno))
+      dev.off()
+    }
+  )
+
+
+  }
+  else if (input$Annotation_figure_option=='Bar') {
+    output$Annotation_figure=renderPlot(plotAnnoBar(reactivevalue$peakAnno))
+    output$downloadannotationfigure <- downloadHandler(
+      filename = paste('Annotation_figure_Bar_plot', '.pdf', sep='') ,
+      content = function(file) {
+        pdf(file,width = 10,height = 10) # open the pdf device
+        plot(plotAnnoBar(reactivevalue$peakAnno))
+        dev.off()
+      }
+    )
+  }
+  else if (input$Annotation_figure_option=='VennPie') {
+    output$Annotation_figure=renderPlot(vennpie(reactivevalue$peakAnno))
+    output$downloadannotationfigure <- downloadHandler(
+      filename = paste('Annotation_figure_VennPie_plot', '.pdf', sep='') ,
+      content = function(file) {
+        pdf(file,width = 10,height = 10) # open the pdf device
+        (vennpie(reactivevalue$peakAnno))
+        dev.off()
+      }
+    )
+  }
+  else if (input$Annotation_figure_option=='upsetplot') {
+    output$Annotation_figure=renderPlot(upsetplot(reactivevalue$peakAnno,vennpie=T))
+
+    output$downloadannotationfigure <- downloadHandler(
+      filename = paste('Annotation_figure_upsetplot_plot', '.pdf', sep='') ,
+      content = function(file) {
+        pdf(file,width = 10,height = 10) # open the pdf device
+        plot(upsetplot(reactivevalue$peakAnno,vennpie=T))
+        dev.off()
+      }
+    )
+  }
 
 
 
-
+})

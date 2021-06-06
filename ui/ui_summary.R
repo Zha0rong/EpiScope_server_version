@@ -35,14 +35,25 @@ tabPanel("Summary",
 
                         plotOutput('length_distribution',width = '75%'),
                ),
-               tabPanel('TSS Heatmap',
-                        h3('Heatmap visualization of TSS coverage'),
+               tabPanel('TSS Visualization',
+                        h3('visualization of TSS coverage'),
+                        selectInput('TSS_visualization_method',
+                                    'Select a Method to Visualize TSS Coverage',choices = c('Heatmap','Coverage Plot'),multiple = F,selected = 'Heatmap'
+                                    ),
                         numericInput('TSS_range','Range of TSS site',value = 2000,min = 0),
                         actionButton(inputId = 'TSS_heatmap_submit',label = 'Submit'),
-                        plotOutput('TSS_Heatmap',width = '50%')
+                        plotOutput('TSS_Heatmap',width = '50%'),
+                        downloadButton("downloadTSScoverage", "Download TSS coverage plot")
                ),
                tabPanel('Functional Annotation',
-                        plotOutput('upsetandvenn')
+                        selectInput('Annotation_figure_option',
+                                    'Select a Method to Visualize Functional Annotation',choices = c('Pie','Bar',
+                                                                                                     'VennPie','upsetplot'),multiple = F,selected = 'Pie'
+                        ),
+                        actionButton(inputId = 'Annotation_figure_submit',label = 'Submit'),
+                        plotOutput('Annotation_figure'),
+                        downloadButton("downloadannotationfigure", "Download Annotation figure")
+
                ),
                tabPanel('Detail Annotation',
                         DTOutput(outputId = 'annotation_table',width='75%')
